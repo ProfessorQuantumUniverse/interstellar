@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interstellar: Eine immersive Reise</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p>KALIBRIERE GRAVITATIONSANTRIEBE...</p>
+    </div>
+
+    <canvas id="bg"></canvas>
+
+    <main id="content">
+        <section id="earth">
+            <h1>Mankind was born on Earth. It was never meant to die here.</h1>
+        </section>
+        <section id="endurance">
+            <h2>Die Endurance</h2>
+            <p>Unsere letzte Hoffnung. Die Reise beginnt.</p>
+        </section>
+        <section id="wormhole">
+            <!-- Gesteuert durch WebGL -->
+        </section>
+        <section id="planets">
+            <h2>Drei Welten. Eine Wahl.</h2>
+            <div class="planet-navigation">
+                <div id="miller" class="planet-nav-item">Millers Planet</div>
+                <div id="mann" class="planet-nav-item">Manns Planet</div>
+                <div id="edmunds" class="planet-nav-item">Edmunds Planet</div>
+            </div>
+        </section>
+        <section id="gargantua">
+            <h2>Das Auge der Unendlichkeit</h2>
+        </section>
+        <section id="tesseract">
+             <h2>Liebe ist die einzige Größe, die Zeit und Raum überwinden kann.</h2>
+        </section>
+        <section id="epilogue">
+            <p>Die Reise geht weiter.</p>
+        </section>
+    </main>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "gsap": "https://unpkg.com/gsap@3.12.5/index.js",
+                "gsap/ScrollTrigger": "https://unpkg.com/gsap@3.12.5/ScrollTrigger.js"
+            }
+        }
+    </script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
