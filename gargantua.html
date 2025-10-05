@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projekt Interstellar: Phase 1 - Gargantua Simulation</title>
+    <link rel="stylesheet" href="css/simulation.css">
+</head>
+<body>
+    <div id="info">
+        <p><strong>PROJEKT INTERSTELLAR - SIMULATION AKTIV</strong></p>
+        <p>Gargantua - Echtzeit Ray Marching & Gravitationslinseneffekt</p>
+        <p>Mausbewegung steuert die Kameraperspektive.</p>
+    </div>
+    <canvas id="gl-canvas"></canvas>
+    
+    <!-- Three.js Core -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <!-- Das Gehirn der Simulation -->
+    <script type="module" src="js/GargantuaScene.js"></script>
+</body>
+</html>
