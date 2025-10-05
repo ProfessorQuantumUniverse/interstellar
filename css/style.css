@@ -12,11 +12,11 @@ body, html {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%;
+    /* height: 100% wird entfernt, damit der Body wachsen und scrollen kann */
     background-color: #000;
     color: var(--text-color);
     font-family: var(--primary-font);
-    overflow: hidden; /* Scrollen wird via JS gesteuert */
+    overflow-x: hidden; /* Horizontales Scrollen verhindern, vertikales erlauben */
 }
 
 #bg {
