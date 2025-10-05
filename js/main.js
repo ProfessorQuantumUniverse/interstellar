@@ -47,7 +47,7 @@ class App {
         this.shaders = new ShaderManager();
         this.clock = new THREE.Clock();
 
-        this.activeScene = 'main'; // 'main', 'gargantua', 'wormhole', 'tesseract'
+        this.activeScene = 'main'; // 'main', 'gargantua', 'tesseract'
 
         // Audio
         this.audio = new AudioManager();
@@ -91,7 +91,8 @@ class App {
 
     async loadAssets() {
         await Promise.all([
-            this.shaders.load('wormhole', './glsl/wormhole_fragment.glsl'),
+            this.shaders.load('wormhole_vertex', './glsl/wormhole_vertex.glsl'), // NEU: Vertex-Shader laden
+            this.shaders.load('wormhole_fragment', './glsl/wormhole_fragment.glsl'),
             this.shaders.load('tesseract_vertex', './glsl/tesseract_vertex.glsl'),
             this.shaders.load('tesseract_fragment', './glsl/tesseract_fragment.glsl')
         ]);
@@ -133,25 +134,29 @@ class App {
             this.world.add(p.name, planet);
         });
 
-        // Wormhole full-screen pass
-        this.shaderScene = new THREE.Scene();
-        this.shaderCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        const planeGeom = new THREE.PlaneGeometry(2, 2);
+        // --- NEUES WURMLOCH-OBJEKT ---
         this.wormholeEffect = new THREE.Mesh(
-            planeGeom,
+            new THREE.SphereGeometry(60, 128, 128), // Kugelgeometrie
             new THREE.ShaderMaterial({
-                fragmentShader: this.shaders.get('wormhole'),
+                vertexShader: this.shaders.get('wormhole_vertex'),
+                fragmentShader: this.shaders.get('wormhole_fragment'),
                 uniforms: {
                     u_time: { value: 0 },
-                    u_progress: { value: 0 },
-                    u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
-                }
+                    u_progress: { value: 0 }, // Steuert die Öffnung und Intensität
+                    u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                    u_camera_pos: { value: this.camera.position }
+                },
+                side: THREE.BackSide, // Wir rendern die Innenseite der Kugel
+                transparent: true,
+                blending: THREE.AdditiveBlending
             })
         );
-        this.shaderScene.add(this.wormholeEffect);
+        this.wormholeEffect.position.set(0, 0, -100); // Positionieren vor den Planeten
+        this.wormholeEffect.visible = false; // Wird durch GSAP sichtbar geschaltet
+        this.world.add('wormhole', this.wormholeEffect);
+        // --- ENDE NEUES WURMLOCH-OBJEKT ---
 
         // Tesseract points effect
-        // Build dynamically so shaders are loaded; fallback simple points if fail
         this.tesseractGroup = new THREE.Group();
         this.world.add('tesseract', this.tesseractGroup);
         this.tesseractGroup.visible = false;
@@ -183,14 +188,22 @@ class App {
           .to(this.camera.position, { x: 50, y: 20, z: 150 }, "endurance")
           .to(this.camera.rotation, { y: Math.PI / 8 }, "endurance")
         
-        // -> Wormhole
-          .to(this.camera.position, { x: 0, y: 0, z: 50 }, "wormhole_entry")
-          .to(this.camera.rotation, { x: 0, y: 0 }, "wormhole_entry")
-          .to(this.world.get('stars').material, { opacity: 0.1 }, "wormhole_entry")
-          .call(() => { this.activeScene = 'wormhole'; this.audio.setScene('wormhole'); }, [], "wormhole_entry")
-          .to(this.wormholeEffect.material.uniforms.u_progress, { value: 1.0 }, "wormhole_flight")
+        // --- ÜBERARBEITETE WURMLOCH-SEQUENZ ---
+          .add("wormhole_approach")
+          .call(() => { this.wormholeEffect.visible = true; }, [], "wormhole_approach")
+          .to(this.camera.position, { x: 0, y: 0, z: -40, ease: "power2.in" }, "wormhole_approach")
+          .to(this.camera.rotation, { x: 0, y: 0, z: 0 }, "wormhole_approach")
+          .to(this.world.get('stars').material, { opacity: 0.1 }, "wormhole_approach")
+          
+          .add("wormhole_flight")
+          .call(() => { this.audio.setScene('wormhole'); }, [], "wormhole_flight")
+          .to(this.wormholeEffect.material.uniforms.u_progress, { value: 1.0, duration: 2 }, "wormhole_flight")
+          
+          .add("wormhole_exit")
           .call(() => { this.activeScene = 'main'; this.audio.setScene('main'); }, [], "wormhole_exit")
           .to(this.world.get('stars').material, { opacity: 1.0 }, "wormhole_exit")
+          .to(this.wormholeEffect.material, { opacity: 0.0, onComplete: () => { this.wormholeEffect.visible = false; this.wormholeEffect.material.opacity = 1.0; } }, "wormhole_exit")
+          // --- ENDE WURMLOCH-SEQUENZ ---
 
         // -> Planets fly-through
           .to(this.camera.position, { x: 0, y: 0, z: 0 }, "planets")
@@ -287,16 +300,16 @@ class App {
         // audio update
         this.audio.update(dt);
 
+        // Update uniforms
+        this.wormholeEffect.material.uniforms.u_time.value = elapsedTime;
+        this.wormholeEffect.material.uniforms.u_camera_pos.value.copy(this.camera.position);
+
         this.renderer.autoClear = false;
         this.renderer.clear();
 
         switch(this.activeScene) {
             case 'gargantua':
                 this.gargantuaScene.animate();
-                break;
-            case 'wormhole':
-                this.wormholeEffect.material.uniforms.u_time.value = elapsedTime;
-                this.renderer.render(this.shaderScene, this.shaderCam);
                 break;
             case 'tesseract':
                 if (this.tesseract) {
