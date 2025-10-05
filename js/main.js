@@ -74,7 +74,7 @@ class App {
         this.gargantuaScene = new GargantuaScene(this.renderer);
         await this.gargantuaScene.init();
 
-        this.createWorldObjects();
+        await this.createWorldObjects(); // Await this to ensure tesseract is built
         this.setupScrollAnimations();
         this.setupPlanetInteraction();
         this.setupAudioUI();
@@ -90,15 +90,14 @@ class App {
     }
 
     async loadAssets() {
+        // We no longer need to load tesseract shaders here as they are in TesseractEffect.js
         await Promise.all([
-            this.shaders.load('wormhole_vertex', './glsl/wormhole_vertex.glsl'), // NEU: Vertex-Shader laden
+            this.shaders.load('wormhole_vertex', './glsl/wormhole_vertex.glsl'),
             this.shaders.load('wormhole_fragment', './glsl/wormhole_fragment.glsl'),
-            this.shaders.load('tesseract_vertex', './glsl/tesseract_vertex.glsl'),
-            this.shaders.load('tesseract_fragment', './glsl/tesseract_fragment.glsl')
         ]);
     }
 
-    createWorldObjects() {
+    async createWorldObjects() {
         // Lights
         this.scene.add(new THREE.AmbientLight(0xffffff, 0.25));
         const sun = new THREE.DirectionalLight(0xffffff, 1.6);
@@ -160,16 +159,17 @@ class App {
         this.tesseractGroup = new THREE.Group();
         this.world.add('tesseract', this.tesseractGroup);
         this.tesseractGroup.visible = false;
-        this.buildTesseract();
+        await this.buildTesseract();
     }
 
     async buildTesseract() {
         try {
-            const module = await import('./TesseractEffect.js');
-            this.tesseract = new module.TesseractEffect();
+            // Dynamischer Import des Moduls
+            const { TesseractEffect } = await import('./TesseractEffect.js');
+            this.tesseract = new TesseractEffect();
             this.tesseractGroup.add(this.tesseract.points);
         } catch (e) {
-            console.warn('Tesseract effect failed to build, using placeholder.', e);
+            console.error('Tesseract effect failed to build, using placeholder.', e);
             const placeholder = new THREE.Points(
                 new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0,0,0], 3)),
                 new THREE.PointsMaterial({ color: 0xffffff, size: 4 })
@@ -222,15 +222,11 @@ class App {
                 if (this.tesseractGroup) this.tesseractGroup.visible = true;
                 this.audio.setScene('tesseract');
             }, [], "tesseract_entry")
-          .to({ p: 0 }, {
+          // --- KORRIGIERTER TESSERACT-TWEEN ---
+          .to(this.tesseract.uniforms.u_progress, {
+                value: 1.0,
                 duration: 2.0,
-                p: 1.0,
-                onUpdate: function() {
-                    if (this.tesseract && this.tesseract.uniforms) {
-                        this.tesseract.uniforms.u_progress.value = this.targets()[0].p;
-                    }
-                }.bind(this)
-            })
+            }, "tesseract_entry")
           
         // -> Epilogue
           .call(() => {
