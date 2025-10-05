@@ -81,10 +81,16 @@ class App {
         sun.position.set(100, 10, 100);
         this.scene.add(sun);
 
-        // Sternenfeld
+        // Sternenfeld - FIX: Korrekte Anordnung der Vertices als x,y,z-Triplets
         const starsGeometry = new THREE.BufferGeometry();
         const starsVertices = [];
-        for (let i = 0; i < 20000; i++) starsVertices.push(THREE.MathUtils.randFloatSpread(4000));
+        for (let i = 0; i < 6667; i++) { // 6667 × 3 = 20001 positions
+            starsVertices.push(
+                THREE.MathUtils.randFloatSpread(4000), // x
+                THREE.MathUtils.randFloatSpread(4000), // y
+                THREE.MathUtils.randFloatSpread(4000)  // z
+            );
+        }
         starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
         const stars = new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 0.9, blending: THREE.AdditiveBlending, transparent: true }));
         this.world.add('stars', stars);
