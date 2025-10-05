@@ -248,7 +248,8 @@ class App {
             if (!el) return;
             el.style.cursor = 'pointer';
             el.addEventListener('mouseenter', () => el.classList.add('hover'));
-            el.addEventListener('mouseleave', => el.classList.remove('hover'));
+            // --- KORREKTUR ---
+            el.addEventListener('mouseleave', () => el.classList.remove('hover'));
             el.addEventListener('click', () => {
                 const planet = this.world.get(id);
                 if (!planet) return;
