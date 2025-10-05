@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
-// Da die Shader-Dateien bereits existieren, laden wir sie hier.
-// In einem komplexeren Build-System würde man dies anders handhaben, aber für unsere Struktur ist dies effizient.
+// --- KORREKTUR: Pfade von '../' zu './' geändert ---
+// Die Pfade sind relativ zur index.html, nicht zur .js Datei.
 const [vertexShader, fragmentShader] = await Promise.all([
-    fetch('../glsl/tesseract_vertex.glsl').then(res => res.text()),
-    fetch('../glsl/tesseract_fragment.glsl').then(res => res.text())
+    fetch('./glsl/tesseract_vertex.glsl').then(res => res.text()),
+    fetch('./glsl/tesseract_fragment.glsl').then(res => res.text())
 ]);
 
 export class TesseractEffect {
