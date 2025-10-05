@@ -90,7 +90,7 @@ class App {
     }
 
     async loadAssets() {
-        // We no longer need to load tesseract shaders here as they are in TesseractEffect.js
+        // Wir laden hier nur noch die Shader für das Wurmloch
         await Promise.all([
             this.shaders.load('wormhole_vertex', './glsl/wormhole_vertex.glsl'),
             this.shaders.load('wormhole_fragment', './glsl/wormhole_fragment.glsl'),
@@ -164,15 +164,15 @@ class App {
 
     async buildTesseract() {
         try {
-            // Dynamischer Import des Moduls
+            // Dynamischer Import des nun existierenden Moduls
             const { TesseractEffect } = await import('./TesseractEffect.js');
             this.tesseract = new TesseractEffect();
             this.tesseractGroup.add(this.tesseract.points);
         } catch (e) {
             console.error('Tesseract effect failed to build, using placeholder.', e);
             const placeholder = new THREE.Points(
-                new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0,0,0], 3)),
-                new THREE.PointsMaterial({ color: 0xffffff, size: 4 })
+                new THREE.BoxGeometry(10, 10, 10, 2, 2, 2),
+                new THREE.PointsMaterial({ color: 0xff00ff, size: 0.5 })
             );
             this.tesseractGroup.add(placeholder);
         }
@@ -223,6 +223,8 @@ class App {
                 this.audio.setScene('tesseract');
             }, [], "tesseract_entry")
           // --- KORRIGIERTER TESSERACT-TWEEN ---
+          // Wir animieren direkt das 'value' Property des Uniforms.
+          // GSAP kann dies ohne Probleme, solange das Zielobjekt existiert.
           .to(this.tesseract.uniforms.u_progress, {
                 value: 1.0,
                 duration: 2.0,
@@ -246,7 +248,7 @@ class App {
             if (!el) return;
             el.style.cursor = 'pointer';
             el.addEventListener('mouseenter', () => el.classList.add('hover'));
-            el.addEventListener('mouseleave', () => el.classList.remove('hover'));
+            el.addEventListener('mouseleave', => el.classList.remove('hover'));
             el.addEventListener('click', () => {
                 const planet = this.world.get(id);
                 if (!planet) return;
@@ -271,7 +273,7 @@ class App {
                 btn.innerText = 'Audio: ON';
             } else {
                 // simple mute toggle
-                this.audio.master.gain.value = this.audio.master.gain.value > 0 ? 0 : 0.7;
+                this.audio.master.gain.value = this.audio.master.gain.value > 0 ? 0.7 : 0;
                 btn.innerText = this.audio.master.gain.value > 0 ? 'Audio: ON' : 'Audio: OFF';
             }
         });
