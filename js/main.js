@@ -57,7 +57,12 @@ class App {
         
         window.addEventListener('resize', this.onResize.bind(this));
         this.animate();
-        gsap.to('#loading-screen', { opacity: 0, duration: 1.5, onComplete: (el) => el.style.display = 'none' });
+        gsap.to('#loading-screen', { opacity: 0, duration: 1.5, onComplete: () => {
+            const el = document.querySelector('#loading-screen');
+            if (el) {
+                el.style.display = 'none';
+            }
+        }});
         console.log("Interstellar Experience Initialized. All systems nominal.");
     }
 
