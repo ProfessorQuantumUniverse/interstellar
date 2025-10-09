@@ -42,7 +42,7 @@ This project is built with a combination of web-native technologies and graphics
 *   **[GLSL](https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language)** (32.7%): Custom shaders for rendering stars, effects, and celestial bodies.
 *   **[CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)** (7.6%): Styling for the HTML overlay and user interface.
 *   **[HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)** (7.4%): The foundation for the web page.
-*   *(Likely)* **[Three.js](https://threejs.org/)** or a similar WebGL library to manage the 3D scene and rendering pipeline.
+*   *And* **[Three.js](https://threejs.org/)** and similar WebGL libraries to manage the 3D scene and rendering pipeline.
 
 ---
 
