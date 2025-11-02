@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interstellar Live Wallpaper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            /* Disable particles to reduce GPU load */
+            display: none;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Black hole / space background - can be replaced with local image */
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #000000 70%),
+                        radial-gradient(circle at 30% 40%, rgba(255, 140, 0, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(255, 200, 100, 0.1) 0%, transparent 40%);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+            /* Static background - no animation to reduce GPU load */
+        }
+
+        /* Removed rotation animation to minimize GPU usage */
+
+        /* Static starfield overlay - no animation */
+        #background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, white, transparent),
+                radial-gradient(2px 2px at 60% 70%, white, transparent),
+                radial-gradient(1px 1px at 50% 50%, white, transparent),
+                radial-gradient(1px 1px at 80% 10%, white, transparent),
+                radial-gradient(2px 2px at 90% 60%, white, transparent),
+                radial-gradient(1px 1px at 33% 80%, white, transparent),
+                radial-gradient(1px 1px at 15% 65%, white, transparent);
+            background-size: 200% 200%;
+            background-position: 0% 0%;
+            opacity: 0.7;
+            /* Static - no animation */
+        }
+
+        /* Alternative: To use a local or custom image, uncomment and modify: */
+        /* #background {
+            background-image: url('path-to-your-black-hole-image.jpg');
+            filter: brightness(0.7);
+        } */
+
+        .glass-container {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            color: white;
+            z-index: 1;
+            /* Simplified transitions - no will-change to reduce GPU usage */
+            transition: all 0.3s ease;
+        }
+
+        .glass-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+            /* Simplified hover - no transform */
+        }
+
+        #apod-container {
+            top: 50px;
+            left: 50px;
+            width: 500px;
+            max-height: 600px;
+            overflow: hidden;
+        }
+
+        #apod-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            /* Simplified - no GPU acceleration or transform */
+            transition: transform 0.3s ease;
+        }
+
+        #apod-image:hover {
+            transform: scale(1.02);
+        }
+
+        #apod-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        #apod-description {
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        #apod-description::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #apod-description::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #apod-description::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        #date-container {
+            top: 50px;
+            right: 50px;
+            width: 300px;
+            text-align: center;
+        }
+
+        #current-date {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        #current-time {
+            font-size: 3.5em;
+            font-weight: 300;
+            letter-spacing: 5px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8),
+                         0 0 20px rgba(100, 200, 255, 0.5);
+            /* Smooth number transitions */
+            transition: opacity 0.3s ease;
+        }
+
+        #current-day {
+            font-size: 1.2em;
+            margin-top: 10px;
+            opacity: 0.9;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        #quote-container {
+            bottom: 50px;
+            left: 50px;
+            width: 600px;
+        }
+
+        #quote-text {
+            font-size: 1.3em;
+            font-style: italic;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+        #quote-author {
+            font-size: 1em;
+            text-align: right;
+            opacity: 0.8;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+        #science-container {
+            bottom: 50px;
+            right: 50px;
+            width: 350px;
+        }
+
+        .science-fact {
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .science-title {
+            font-weight: 600;
+            color: #4fc3f7;
+            margin-bottom: 5px;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .copyright {
+            font-size: 0.7em;
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+
+        /* Progress bars for day and year */
+        .progress-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7 0%, #64b5f6 100%);
+            border-radius: 10px;
+            transition: width 1s ease;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+
+        /* Simplified animation - opacity only to reduce GPU load */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .quote-animate {
+            animation: slideIn 0.8s ease-out;
+        }
+
+        /* Simplified science facts - no transform on hover */
+        .science-fact {
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .science-fact:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-left-color: #4fc3f7;
+            /* Removed transform to reduce GPU usage */
+        }
+
+        /* Enhanced title styling */
+        #apod-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            border-left: 4px solid #4fc3f7;
+            padding-left: 12px;
+        }
+
+        /* Smooth scrollbar for APOD description */
+        #apod-description {
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div id="background"></div>
+    <div id="loading">Lade kosmische Daten...</div>
+
+    <div id="apod-container" class="glass-container fade-in" style="display: none;">
+        <img id="apod-image" src="" alt="APOD">
+        <div id="apod-title"></div>
+        <div id="apod-description"></div>
+        <div class="copyright">NASA APOD</div>
+    </div>
+
+    <div id="date-container" class="glass-container fade-in">
+        <div id="current-date"></div>
+        <div id="current-time"></div>
+        <div id="current-day"></div>
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Tag Fortschritt</span>
+                <span id="day-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="day-progress"></div>
+            </div>
+            <div class="progress-label">
+                <span>Jahr Fortschritt</span>
+                <span id="year-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="year-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quote-container" class="glass-container fade-in">
+        <div id="quote-text"></div>
+        <div id="quote-author"></div>
+    </div>
+
+    <div id="science-container" class="glass-container fade-in">
+        <div class="science-fact">
+            <div class="science-title">🌌 Schwarzes Loch</div>
+            <div>Gargantua aus Interstellar ist ein rotierendes schwarzes Loch mit 100 Millionen Sonnenmassen.</div>
+        </div>
+        <div class="science-fact">
+            <div class="science-title">⏱️ Zeitdilatation</div>
+            <div>Auf Millers Planet vergehen 7 Jahre auf der Erde pro Stunde aufgrund extremer Gravitation.</div>
+        </div>
+        <div class="science-fact">
+            <div class="science-title">🔭 Hubble-Konstante</div>
+            <div>Das Universum expandiert mit ~70 km/s pro Megaparsec.</div>
+        </div>
+        <div class="science-fact">
+            <div class="science-title">💫 Lichtgeschwindigkeit</div>
+            <div>c = 299.792.458 m/s - Die ultimative kosmische Geschwindigkeitsbegrenzung.</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const APOD_API_KEY = 'DEMO_KEY'; // For production, use a proper API key
+        const CACHE_DURATION = 3600000; // 1 hour in milliseconds
+        const APOD_CACHE_DURATION = 86400000; // 24 hours for APOD
+
+        // Einstein Quotes and science quotes
+        const einsteinQuotes = [
+            {
+                text: "Die Definition von Wahnsinn ist, immer wieder das Gleiche zu tun und andere Ergebnisse zu erwarten.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Phantasie ist wichtiger als Wissen, denn Wissen ist begrenzt.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Zwei Dinge sind unendlich, das Universum und die menschliche Dummheit, aber bei dem Universum bin ich mir noch nicht ganz sicher.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Die Zeit ist relativ - ihre Dauer hängt von dem ab, was man zwischen zwei gegebenen Zeitpunkten tut.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Das Schönste, was wir erleben können, ist das Geheimnisvolle.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Wenn man zwei Stunden lang mit einem Mädchen zusammensitzt, meint man, es wäre eine Minute. Sitzt man jedoch eine Minute auf einem heißen Ofen, meint man, es wären zwei Stunden. Das ist Relativität.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Die besten Dinge im Leben sind nicht die, die man für Geld bekommt.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Gravitation kann nicht dafür verantwortlich gemacht werden, dass Menschen sich verlieben.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Lernen ist Erfahrung. Alles andere ist einfach nur Information.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Die Wissenschaft ist eine wunderbare Sache, wenn man nicht seinen Lebensunterhalt damit verdienen muss.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Gott würfelt nicht.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Ich habe keine besondere Begabung, sondern bin nur leidenschaftlich neugierig.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Wir können unsere Probleme nicht mit derselben Denkweise lösen, mit der wir sie erschaffen haben.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Die Logik bringt dich von A nach B. Die Fantasie bringt dich überall hin.",
+                author: "Albert Einstein"
+            },
+            {
+                text: "Das, wobei unsere Berechnungen versagen, nennen wir Zufall.",
+                author: "Albert Einstein"
+            }
+        ];
+
+        // Cache management
+        function setCache(key, data) {
+            const cacheData = {
+                data: data,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(key, JSON.stringify(cacheData));
+        }
+
+        function getCache(key, maxAge) {
+            const cached = localStorage.getItem(key);
+            if (!cached) return null;
+
+            try {
+                const cacheData = JSON.parse(cached);
+                const age = Date.now() - cacheData.timestamp;
+                
+                if (age < maxAge) {
+                    return cacheData.data;
+                }
+            } catch (e) {
+                console.error('Cache parse error:', e);
+            }
+            
+            return null;
+        }
+
+        // Update date and time (without seconds!)
+        function updateDateTime() {
+            const now = new Date();
+            
+            const dateOptions = { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            };
+            const dateStr = now.toLocaleDateString('de-DE', dateOptions);
+            
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+            
+            const dayOptions = { weekday: 'long' };
+            const dayStr = now.toLocaleDateString('de-DE', dayOptions);
+            
+            document.getElementById('current-date').textContent = dateStr;
+            document.getElementById('current-time').textContent = timeStr;
+            document.getElementById('current-day').textContent = dayStr;
+
+            // Update progress bars
+            updateProgressBars();
+        }
+
+        // Update progress bars for day and year
+        function updateProgressBars() {
+            const now = new Date();
+            
+            // Day progress (percentage of day completed)
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const msIntoDay = now - startOfDay;
+            const msInDay = 24 * 60 * 60 * 1000;
+            const dayProgress = (msIntoDay / msInDay) * 100;
+            
+            // Year progress (percentage of year completed)
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
+            const msIntoYear = now - startOfYear;
+            const msInYear = endOfYear - startOfYear;
+            const yearProgress = (msIntoYear / msInYear) * 100;
+            
+            // Update DOM with smooth animation
+            const dayProgressEl = document.getElementById('day-progress');
+            const yearProgressEl = document.getElementById('year-progress');
+            const dayPercentageEl = document.getElementById('day-percentage');
+            const yearPercentageEl = document.getElementById('year-percentage');
+            
+            if (dayProgressEl && yearProgressEl) {
+                dayProgressEl.style.width = dayProgress.toFixed(2) + '%';
+                yearProgressEl.style.width = yearProgress.toFixed(2) + '%';
+                dayPercentageEl.textContent = dayProgress.toFixed(1) + '%';
+                yearPercentageEl.textContent = yearProgress.toFixed(1) + '%';
+            }
+        }
+
+        // Update quote with animation
+        function updateQuote() {
+            const quoteText = document.getElementById('quote-text');
+            const quoteAuthor = document.getElementById('quote-author');
+            
+            // Fade out
+            quoteText.style.opacity = '0';
+            quoteAuthor.style.opacity = '0';
+            
+            setTimeout(() => {
+                const quote = einsteinQuotes[Math.floor(Math.random() * einsteinQuotes.length)];
+                quoteText.textContent = `"${quote.text}"`;
+                quoteAuthor.textContent = `— ${quote.author}`;
+                
+                // Add animation class
+                quoteText.classList.add('quote-animate');
+                quoteAuthor.classList.add('quote-animate');
+                
+                // Fade in
+                quoteText.style.opacity = '1';
+                quoteAuthor.style.opacity = '1';
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    quoteText.classList.remove('quote-animate');
+                    quoteAuthor.classList.remove('quote-animate');
+                }, 800);
+            }, 300);
+        }
+
+        // Fetch APOD
+        async function fetchAPOD() {
+            const cached = getCache('apod', APOD_CACHE_DURATION);
+            if (cached) {
+                displayAPOD(cached);
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${APOD_API_KEY}`);
+                
+                if (!response.ok) {
+                    throw new Error('APOD API error');
+                }
+                
+                const data = await response.json();
+                setCache('apod', data);
+                displayAPOD(data);
+            } catch (error) {
+                console.error('Error fetching APOD:', error);
+                // Show fallback
+                displayFallbackAPOD();
+            }
+        }
+
+        function displayAPOD(data) {
+            const container = document.getElementById('apod-container');
+            const image = document.getElementById('apod-image');
+            const title = document.getElementById('apod-title');
+            const description = document.getElementById('apod-description');
+
+            // Handle video content
+            if (data.media_type === 'video') {
+                // For videos, use the thumbnail if available, otherwise show title only
+                image.style.display = 'none';
+            } else {
+                image.src = data.url;
+                image.style.display = 'block';
+            }
+
+            title.textContent = data.title;
+            description.textContent = data.explanation;
+            
+            document.getElementById('loading').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        function displayFallbackAPOD() {
+            const container = document.getElementById('apod-container');
+            const image = document.getElementById('apod-image');
+            const title = document.getElementById('apod-title');
+            const description = document.getElementById('apod-description');
+
+            image.style.display = 'none';
+            title.textContent = 'Astronomy Picture of the Day';
+            description.textContent = 'Aktuell können keine APOD-Daten geladen werden. Bitte überprüfen Sie Ihre Internetverbindung.';
+            
+            document.getElementById('loading').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        // Initialize
+        function init() {
+            updateDateTime();
+            updateQuote();
+            fetchAPOD();
+
+            // Update time every minute (no seconds!)
+            setInterval(updateDateTime, 60000);
+
+            // Change quote every 10 minutes
+            setInterval(updateQuote, 600000);
+
+            // Refresh APOD every hour
+            setInterval(fetchAPOD, CACHE_DURATION);
+
+            // Disabled to minimize GPU usage
+            // addParallaxEffect();
+            // initParticleSystem();
+        }
+
+        // Parallax effect disabled to reduce GPU load
+        function addParallaxEffect() {
+            // Disabled to minimize GPU usage
+            return;
+        }
+
+        // Particle system disabled to reduce GPU load
+        function initParticleSystem() {
+            // Disabled to minimize GPU usage
+            return;
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
