@@ -17,6 +17,19 @@
             width: 100vw;
             height: 100vh;
             background: #000;
+            /* GPU acceleration for better performance */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
         #background {
@@ -33,13 +46,47 @@
             background-position: center;
             background-repeat: no-repeat;
             z-index: 0;
-            /* Add subtle animated stars */
+            /* GPU-accelerated animation */
+            will-change: transform;
+            transform: translateZ(0);
             animation: rotateBackground 200s linear infinite;
         }
 
         @keyframes rotateBackground {
-            from { background-position: 0% 0%, 0% 0%, 0% 0%; }
-            to { background-position: 100% 100%, 50% 50%, 75% 75%; }
+            from { 
+                transform: translateZ(0) rotate(0deg);
+            }
+            to { 
+                transform: translateZ(0) rotate(360deg);
+            }
+        }
+
+        /* Animated starfield overlay */
+        #background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, white, transparent),
+                radial-gradient(2px 2px at 60% 70%, white, transparent),
+                radial-gradient(1px 1px at 50% 50%, white, transparent),
+                radial-gradient(1px 1px at 80% 10%, white, transparent),
+                radial-gradient(2px 2px at 90% 60%, white, transparent),
+                radial-gradient(1px 1px at 33% 80%, white, transparent),
+                radial-gradient(1px 1px at 15% 65%, white, transparent);
+            background-size: 200% 200%;
+            background-position: 0% 0%;
+            animation: twinkle 8s ease-in-out infinite;
+            opacity: 0.6;
+            will-change: opacity;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.9; }
         }
 
         /* Alternative: To use a local or custom image, uncomment and modify: */
@@ -59,6 +106,17 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             color: white;
             z-index: 1;
+            /* GPU acceleration */
+            will-change: transform;
+            transform: translateZ(0);
+            transition: all 0.3s ease;
+        }
+
+        .glass-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+            transform: translateZ(0) translateY(-2px);
         }
 
         #apod-container {
@@ -76,6 +134,14 @@
             border-radius: 15px;
             margin-bottom: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            /* GPU acceleration for smooth rendering */
+            will-change: transform;
+            transform: translateZ(0);
+            transition: transform 0.3s ease;
+        }
+
+        #apod-image:hover {
+            transform: translateZ(0) scale(1.02);
         }
 
         #apod-title {
@@ -122,10 +188,13 @@
         }
 
         #current-time {
-            font-size: 3em;
+            font-size: 3.5em;
             font-weight: 300;
-            letter-spacing: 3px;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            letter-spacing: 5px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8),
+                         0 0 20px rgba(100, 200, 255, 0.5);
+            /* Smooth number transitions */
+            transition: opacity 0.3s ease;
         }
 
         #current-day {
@@ -147,6 +216,7 @@
             line-height: 1.6;
             margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            transition: opacity 0.3s ease;
         }
 
         #quote-author {
@@ -154,6 +224,7 @@
             text-align: right;
             opacity: 0.8;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            transition: opacity 0.3s ease;
         }
 
         #science-container {
@@ -203,9 +274,97 @@
             opacity: 0.6;
             margin-top: 8px;
         }
+
+        /* Progress bars for day and year */
+        .progress-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7 0%, #64b5f6 100%);
+            border-radius: 10px;
+            transition: width 1s ease;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+
+        /* Animated quote transition */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quote-animate {
+            animation: slideIn 0.8s ease-out;
+        }
+
+        /* Subtle pulse for science facts */
+        .science-fact {
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .science-fact:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-left-color: #4fc3f7;
+            transform: translateX(5px);
+        }
+
+        /* Enhanced title styling */
+        #apod-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            border-left: 4px solid #4fc3f7;
+            padding-left: 12px;
+        }
+
+        /* Smooth scrollbar for APOD description */
+        #apod-description {
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            padding-right: 10px;
+        }
     </style>
 </head>
 <body>
+    <canvas id="particles"></canvas>
     <div id="background"></div>
     <div id="loading">Lade kosmische Daten...</div>
 
@@ -220,6 +379,22 @@
         <div id="current-date"></div>
         <div id="current-time"></div>
         <div id="current-day"></div>
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Tag Fortschritt</span>
+                <span id="day-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="day-progress"></div>
+            </div>
+            <div class="progress-label">
+                <span>Jahr Fortschritt</span>
+                <span id="year-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="year-progress"></div>
+            </div>
+        </div>
     </div>
 
     <div id="quote-container" class="glass-container fade-in">
@@ -364,13 +539,70 @@
             document.getElementById('current-date').textContent = dateStr;
             document.getElementById('current-time').textContent = timeStr;
             document.getElementById('current-day').textContent = dayStr;
+
+            // Update progress bars
+            updateProgressBars();
         }
 
-        // Update quote
+        // Update progress bars for day and year
+        function updateProgressBars() {
+            const now = new Date();
+            
+            // Day progress (percentage of day completed)
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const msIntoDay = now - startOfDay;
+            const msInDay = 24 * 60 * 60 * 1000;
+            const dayProgress = (msIntoDay / msInDay) * 100;
+            
+            // Year progress (percentage of year completed)
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
+            const msIntoYear = now - startOfYear;
+            const msInYear = endOfYear - startOfYear;
+            const yearProgress = (msIntoYear / msInYear) * 100;
+            
+            // Update DOM with smooth animation
+            const dayProgressEl = document.getElementById('day-progress');
+            const yearProgressEl = document.getElementById('year-progress');
+            const dayPercentageEl = document.getElementById('day-percentage');
+            const yearPercentageEl = document.getElementById('year-percentage');
+            
+            if (dayProgressEl && yearProgressEl) {
+                dayProgressEl.style.width = dayProgress.toFixed(2) + '%';
+                yearProgressEl.style.width = yearProgress.toFixed(2) + '%';
+                dayPercentageEl.textContent = dayProgress.toFixed(1) + '%';
+                yearPercentageEl.textContent = yearProgress.toFixed(1) + '%';
+            }
+        }
+
+        // Update quote with animation
         function updateQuote() {
-            const quote = einsteinQuotes[Math.floor(Math.random() * einsteinQuotes.length)];
-            document.getElementById('quote-text').textContent = `"${quote.text}"`;
-            document.getElementById('quote-author').textContent = `— ${quote.author}`;
+            const quoteText = document.getElementById('quote-text');
+            const quoteAuthor = document.getElementById('quote-author');
+            
+            // Fade out
+            quoteText.style.opacity = '0';
+            quoteAuthor.style.opacity = '0';
+            
+            setTimeout(() => {
+                const quote = einsteinQuotes[Math.floor(Math.random() * einsteinQuotes.length)];
+                quoteText.textContent = `"${quote.text}"`;
+                quoteAuthor.textContent = `— ${quote.author}`;
+                
+                // Add animation class
+                quoteText.classList.add('quote-animate');
+                quoteAuthor.classList.add('quote-animate');
+                
+                // Fade in
+                quoteText.style.opacity = '1';
+                quoteAuthor.style.opacity = '1';
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    quoteText.classList.remove('quote-animate');
+                    quoteAuthor.classList.remove('quote-animate');
+                }, 800);
+            }, 300);
         }
 
         // Fetch APOD
@@ -448,6 +680,107 @@
 
             // Refresh APOD every hour
             setInterval(fetchAPOD, CACHE_DURATION);
+
+            // Add subtle parallax effect for immersion
+            addParallaxEffect();
+
+            // Initialize cosmic particle system
+            initParticleSystem();
+        }
+
+        // Subtle parallax effect on mouse move
+        function addParallaxEffect() {
+            let mouseX = 0, mouseY = 0;
+            let currentX = 0, currentY = 0;
+            
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 20;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 20;
+            });
+
+            // Smooth animation using requestAnimationFrame for GPU efficiency
+            function animate() {
+                currentX += (mouseX - currentX) * 0.05;
+                currentY += (mouseY - currentY) * 0.05;
+
+                const containers = document.querySelectorAll('.glass-container');
+                containers.forEach((container, index) => {
+                    const depth = (index + 1) * 0.3;
+                    container.style.transform = `translateZ(0) translate(${currentX * depth}px, ${currentY * depth}px)`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // Cosmic particle system for ambience
+        function initParticleSystem() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d', { alpha: true });
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            const particleCount = 50; // Keep it light for performance
+            
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.3;
+                    this.speedY = (Math.random() - 0.5) * 0.3;
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    
+                    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                        this.reset();
+                    }
+                }
+                
+                draw() {
+                    ctx.fillStyle = `rgba(100, 200, 255, ${this.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Create particles
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+            
+            // Animation loop with GPU optimization
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                
+                requestAnimationFrame(animateParticles);
+            }
+            
+            animateParticles();
+            
+            // Resize handler
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
         }
 
         // Start when page loads
