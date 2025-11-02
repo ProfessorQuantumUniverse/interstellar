@@ -17,9 +17,6 @@
             width: 100vw;
             height: 100vh;
             background: #000;
-            /* GPU acceleration for better performance */
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
         }
 
         #particles {
@@ -30,6 +27,8 @@
             height: 100%;
             z-index: 0;
             pointer-events: none;
+            /* Disable particles to reduce GPU load */
+            display: none;
         }
 
         #background {
@@ -46,22 +45,12 @@
             background-position: center;
             background-repeat: no-repeat;
             z-index: 0;
-            /* GPU-accelerated animation */
-            will-change: transform;
-            transform: translateZ(0);
-            animation: rotateBackground 200s linear infinite;
+            /* Static background - no animation to reduce GPU load */
         }
 
-        @keyframes rotateBackground {
-            from { 
-                transform: translateZ(0) rotate(0deg);
-            }
-            to { 
-                transform: translateZ(0) rotate(360deg);
-            }
-        }
+        /* Removed rotation animation to minimize GPU usage */
 
-        /* Animated starfield overlay */
+        /* Static starfield overlay - no animation */
         #background::before {
             content: '';
             position: absolute;
@@ -79,14 +68,8 @@
                 radial-gradient(1px 1px at 15% 65%, white, transparent);
             background-size: 200% 200%;
             background-position: 0% 0%;
-            animation: twinkle 8s ease-in-out infinite;
-            opacity: 0.6;
-            will-change: opacity;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 0.9; }
+            opacity: 0.7;
+            /* Static - no animation */
         }
 
         /* Alternative: To use a local or custom image, uncomment and modify: */
@@ -106,9 +89,7 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             color: white;
             z-index: 1;
-            /* GPU acceleration */
-            will-change: transform;
-            transform: translateZ(0);
+            /* Simplified transitions - no will-change to reduce GPU usage */
             transition: all 0.3s ease;
         }
 
@@ -116,7 +97,7 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-            transform: translateZ(0) translateY(-2px);
+            /* Simplified hover - no transform */
         }
 
         #apod-container {
@@ -134,14 +115,12 @@
             border-radius: 15px;
             margin-bottom: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            /* GPU acceleration for smooth rendering */
-            will-change: transform;
-            transform: translateZ(0);
+            /* Simplified - no GPU acceleration or transform */
             transition: transform 0.3s ease;
         }
 
         #apod-image:hover {
-            transform: translateZ(0) scale(1.02);
+            transform: scale(1.02);
         }
 
         #apod-title {
@@ -307,15 +286,13 @@
             box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
         }
 
-        /* Animated quote transition */
+        /* Simplified animation - opacity only to reduce GPU load */
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
 
@@ -323,7 +300,7 @@
             animation: slideIn 0.8s ease-out;
         }
 
-        /* Subtle pulse for science facts */
+        /* Simplified science facts - no transform on hover */
         .science-fact {
             font-size: 0.95em;
             line-height: 1.6;
@@ -339,7 +316,7 @@
         .science-fact:hover {
             background: rgba(255, 255, 255, 0.06);
             border-left-color: #4fc3f7;
-            transform: translateX(5px);
+            /* Removed transform to reduce GPU usage */
         }
 
         /* Enhanced title styling */
@@ -681,106 +658,21 @@
             // Refresh APOD every hour
             setInterval(fetchAPOD, CACHE_DURATION);
 
-            // Add subtle parallax effect for immersion
-            addParallaxEffect();
-
-            // Initialize cosmic particle system
-            initParticleSystem();
+            // Disabled to minimize GPU usage
+            // addParallaxEffect();
+            // initParticleSystem();
         }
 
-        // Subtle parallax effect on mouse move
+        // Parallax effect disabled to reduce GPU load
         function addParallaxEffect() {
-            let mouseX = 0, mouseY = 0;
-            let currentX = 0, currentY = 0;
-            
-            document.addEventListener('mousemove', (e) => {
-                mouseX = (e.clientX / window.innerWidth - 0.5) * 20;
-                mouseY = (e.clientY / window.innerHeight - 0.5) * 20;
-            });
-
-            // Smooth animation using requestAnimationFrame for GPU efficiency
-            function animate() {
-                currentX += (mouseX - currentX) * 0.05;
-                currentY += (mouseY - currentY) * 0.05;
-
-                const containers = document.querySelectorAll('.glass-container');
-                containers.forEach((container, index) => {
-                    const depth = (index + 1) * 0.3;
-                    container.style.transform = `translateZ(0) translate(${currentX * depth}px, ${currentY * depth}px)`;
-                });
-
-                requestAnimationFrame(animate);
-            }
-            
-            animate();
+            // Disabled to minimize GPU usage
+            return;
         }
 
-        // Cosmic particle system for ambience
+        // Particle system disabled to reduce GPU load
         function initParticleSystem() {
-            const canvas = document.getElementById('particles');
-            const ctx = canvas.getContext('2d', { alpha: true });
-            
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            const particles = [];
-            const particleCount = 50; // Keep it light for performance
-            
-            class Particle {
-                constructor() {
-                    this.reset();
-                }
-                
-                reset() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 2 + 0.5;
-                    this.speedX = (Math.random() - 0.5) * 0.3;
-                    this.speedY = (Math.random() - 0.5) * 0.3;
-                    this.opacity = Math.random() * 0.5 + 0.2;
-                }
-                
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    
-                    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
-                        this.reset();
-                    }
-                }
-                
-                draw() {
-                    ctx.fillStyle = `rgba(100, 200, 255, ${this.opacity})`;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-            
-            // Create particles
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
-            
-            // Animation loop with GPU optimization
-            function animateParticles() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                particles.forEach(particle => {
-                    particle.update();
-                    particle.draw();
-                });
-                
-                requestAnimationFrame(animateParticles);
-            }
-            
-            animateParticles();
-            
-            // Resize handler
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
+            // Disabled to minimize GPU usage
+            return;
         }
 
         // Start when page loads
