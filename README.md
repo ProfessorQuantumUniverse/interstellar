@@ -1,3 +1,14 @@
+> ## 📦 This project has moved
+>
+> **Interstellar** is now part of the **[toolsperiments](https://github.com/ProfessorQuantumUniverse/toolsperiments)** collection.
+>
+> - 🌐 **Live demo:** https://professorquantumuniverse.github.io/toolsperiments/interstellar/
+> - 📂 **Source:** https://github.com/ProfessorQuantumUniverse/toolsperiments/tree/main/interstellar
+>
+> This repository is **archived** and no longer maintained here.
+
+---
+
 # 🌌 Interstellar
 
 [![GitHub license](https://img.shields.io/badge/license-UNLICENSED-blue.svg)](LICENSE)
